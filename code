@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Toolbox</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url('https://picsum.photos/1920/1080') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+        }
+
+        .container {
+            max-width: 700px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 12px;
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.15);
+            margin-top: 50px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #ffcc00;
+            font-weight: 700;
+        }
+
+        .form-control {
+            font-size: 0.9rem;
+            padding: 8px;
+        }
+
+        .btn {
+            font-size: 0.9rem;
+            padding: 8px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            animation: pulse 1s infinite;
+        }
+
+        .toggle-password {
+            cursor: pointer;
+            margin-left: 8px;
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container text-center">
+        <h1 class="mb-3">Password Toolbox</h1>
+
+        <div class="mb-2 d-flex">
+            <input type="text" id="password" class="form-control" placeholder="Generated Password" readonly>
+            <button class="btn btn-success ms-2" onclick="copyToClipboard('password')">Copy</button>
+        </div>
+        <button class="btn btn-primary mb-3" onclick="generatePassword()">Generate Password</button>
+
+        <div class="mb-2 d-flex">
+            <input type="password" id="checkPassword" class="form-control"
+                placeholder="Enter password to check strength">
+            <span class="toggle-password" onclick="toggleVisibility('checkPassword')">👁️</span>
+        </div>
+        <button class="btn btn-secondary mb-2" onclick="checkStrength()">Check Strength</button>
+        <p id="strengthResult" class="fw-bold"></p>
+
+        <div class="mb-2 d-flex">
+            <input type="password" id="leakPassword" class="form-control" placeholder="Check if password is leaked">
+            <span class="toggle-password" onclick="toggleVisibility('leakPassword')">👁️</span>
+        </div>
+        <button class="btn btn-danger mb-2" onclick="checkLeak()">Check Leak</button>
+        <p id="leakResult" class="fw-bold"></p>
+
+        <div class="mb-2 d-flex">
+            <input type="password" id="hashPassword" class="form-control" placeholder="Enter password to hash">
+            <span class="toggle-password" onclick="toggleVisibility('hashPassword')">👁️</span>
+        </div>
+        <button class="btn btn-warning mb-2" onclick="generateHash()">Generate SHA-256 Hash</button>
+        <p id="hashResult" class="fw-bold word-break"></p>
+        <button class="btn btn-success" id="copyHashButton" onclick="copyHash()">Copy Hash</button>
+    </div>
+
+    <script>
+        let generatedHash = ''; // Variable to store generated hash
+
+        function generatePassword() {
+            let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+            let passwordLength = 12;
+            let password = "";
+            for (let i = 0; i < passwordLength; i++) {
+                let randomIndex = Math.floor(Math.random() * chars.length);
+                password += chars[randomIndex];
+            }
+            document.getElementById("password").value = password;
+        }
+
+        function copyToClipboard(elementId, isText = false) {
+            let text = isText ? document.getElementById(elementId).textContent : document.getElementById(elementId).value;
+            let button = event.target; // This will reference the button that was clicked
+
+            // Copy the text to clipboard
+            navigator.clipboard.writeText(text).then(() => {
+                // Save the original button text and color
+                let originalText = button.innerText;
+                let originalColor = button.style.backgroundColor;
+
+                // Change the button text to "Copied" and change the button color
+                button.innerText = "Copied";
+                button.style.backgroundColor = "#28a745"; // Green color for copied
+
+                // Revert the button text and color back to original after 2 seconds
+                setTimeout(() => {
+                    button.innerText = originalText;
+                    button.style.backgroundColor = originalColor;
+                }, 2000);
+            }).catch(err => {
+                console.error("Error copying text: ", err);
+            });
+        }
+
+        function toggleVisibility(inputId) {
+            let input = document.getElementById(inputId);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+
+        function checkStrength() {
+            let password = document.getElementById("checkPassword").value;
+            let strengthResult = document.getElementById("strengthResult");
+
+            if (!password) {
+                strengthResult.textContent = "Please enter a password.";
+                strengthResult.style.color = "red";
+                return;
+            }
+
+            let result = zxcvbn(password);
+            let messages = ["Very Weak", "Weak", "Moderate", "Strong", "Very Strong"];
+            let colors = ["red", "orange", "yellow", "green", "blue"];
+
+            strengthResult.textContent = messages[result.score];
+            strengthResult.style.color = colors[result.score];
+        }
+
+        async function checkLeak() {
+            let password = document.getElementById("leakPassword").value;
+            let leakResult = document.getElementById("leakResult");
+
+            if (!password) {
+                leakResult.textContent = "Please enter a password.";
+                leakResult.style.color = "red";
+                return;
+            }
+
+            let hashedPassword = CryptoJS.SHA1(password).toString().toUpperCase();
+            let prefix = hashedPassword.substring(0, 5);
+            let suffix = hashedPassword.substring(5);
+
+            try {
+                let response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+                let data = await response.text();
+
+                leakResult.textContent = data.includes(suffix) ? "Password has been leaked!" : "Password is safe.";
+                leakResult.style.color = data.includes(suffix) ? "red" : "green";
+            } catch (error) {
+                leakResult.textContent = "Error checking password leak.";
+                leakResult.style.color = "red";
+            }
+        }
+
+        function generateHash() {
+            let password = document.getElementById("hashPassword").value;
+            let hashResult = document.getElementById("hashResult");
+
+            if (!password) {
+                hashResult.textContent = "Please enter a password.";
+                hashResult.style.color = "red";
+                return;
+            }
+
+            generatedHash = CryptoJS.SHA256(password).toString();
+            hashResult.textContent = generatedHash;
+            hashResult.style.color = "white";
+        }
+
+        function copyHash() {
+            // Check if a hash has been generated and if the password input is empty
+            if (!generatedHash || document.getElementById("hashPassword").value === "") {
+                alert("Please generate SHA-256 hash first.");
+                return;
+            }
+
+            // Copy the generated hash to clipboard
+            navigator.clipboard.writeText(generatedHash).then(() => {
+                let button = document.getElementById('copyHashButton'); // Reference to the button that was clicked
+
+                // Save the original button text and color
+                let originalText = button.innerText;
+                let originalColor = button.style.backgroundColor;
+
+                // Change the button text to "Copied" and change the button color
+                button.innerText = "Copied";
+                button.style.backgroundColor = "#28a745"; // Green color for copied
+
+                // Revert the button text and color back to original after 2 seconds
+                setTimeout(() => {
+                    button.innerText = originalText;
+                    button.style.backgroundColor = originalColor;
+                }, 2000);
+            }).catch(err => {
+                console.error("Error copying hash: ", err);
+            });
+        }
+    </script>
+</body>
+
+</html>
