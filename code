@@ -14,9 +14,10 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: url('https://picsum.photos/1920/1080') no-repeat center center fixed;
+            background: url('https://picsum.photos/1920/1080?random=1') no-repeat center center fixed;
             background-size: cover;
             color: white;
+            padding-bottom: 50px;
         }
 
         .container {
@@ -26,6 +27,7 @@
             border-radius: 12px;
             box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.15);
             margin-top: 50px;
+            color: white
         }
 
         h1 {
@@ -54,12 +56,65 @@
             margin-left: 8px;
             user-select: none;
         }
+
+        .password-tips {
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            padding: 10px;
+            max-width: 280px;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .password-tips h5 {
+            color: #ffcc00;
+            margin-bottom: 8px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
+        .sha-info {
+            position: fixed;
+            top: 50px;
+            left: 20px;
+            padding: 12px;
+            max-width: 250px;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .sha-info h5 {
+            color: #ffcc00;
+            margin-bottom: 8px;
+        }
+
     </style>
 </head>
 
 <body>
+    <div class="sha-info">
+        <h5>🔐 What is SHA-256?</h5>
+        <p>SHA-256 is a cryptographic hash function that converts your password into a unique 256-bit hash. It's widely
+            used for password security, blockchain, and data integrity.</p>
+    </div>
+
     <div class="container text-center">
-        <h1 class="mb-3">Password Toolbox</h1>
+        <h1 class="mb-3"><b>PASSWORD TOOLBOX</b></h1>
+        <p>Use this toolbox to generate, check, and secure your passwords effectively.</p>
 
         <div class="mb-2 d-flex">
             <input type="text" id="password" class="form-control" placeholder="Generated Password" readonly>
@@ -72,7 +127,7 @@
                 placeholder="Enter password to check strength">
             <span class="toggle-password" onclick="toggleVisibility('checkPassword')">👁️</span>
         </div>
-        <button class="btn btn-secondary mb-2" onclick="checkStrength()">Check Strength</button>
+        <button class="btn btn-secondary mb-2" type="button" onclick="checkStrength()">Check Strength</button>
         <p id="strengthResult" class="fw-bold"></p>
 
         <div class="mb-2 d-flex">
@@ -81,6 +136,8 @@
         </div>
         <button class="btn btn-danger mb-2" onclick="checkLeak()">Check Leak</button>
         <p id="leakResult" class="fw-bold"></p>
+        <p id="breachCount" class="fw-bold"></p>
+
 
         <div class="mb-2 d-flex">
             <input type="password" id="hashPassword" class="form-control" placeholder="Enter password to hash">
@@ -91,8 +148,33 @@
         <button class="btn btn-success" id="copyHashButton" onclick="copyHash()">Copy Hash</button>
     </div>
 
+    <div class="container text-center mt-4 p-3"
+        style="background: rgba(0, 0, 0, 0.85); border-radius: 12px; bottom: 5px;">
+        <h1 class="text-warning">What is <b><span style="color: red;">Have I Been Pwned</span></b>?</h1>
+        <p class="text-light">
+            <strong>Have I Been Pwned (HIBP)</strong> is a database that collects and tracks leaked passwords and email
+            breaches.
+            It allows users to check if their credentials have been compromised in known security breaches.
+            This tool helps enhance security by encouraging users to change weak or exposed passwords.
+        </p>
+        <a href="https://haveibeenpwned.com/" class="btn btn-info" target="_blank">Learn More</a>
+    </div>
+
+    <div class="password-tips">
+        <h5>Password Security Tips:</h5>
+        <ul class="custom-bullets">
+            <li>✔️ Use a mix of uppercase, lowercase, numbers, and symbols.</li>
+            <li>🔒 Avoid using common words or easily guessed information.</li>
+            <li>🛠️ Use a password manager to store your credentials securely.</li>
+            <li>🛡️ Enable two-factor authentication (2FA) whenever possible.</li>
+            <li>🔄 Change your passwords regularly and never reuse old ones.</li>
+        </ul>
+    </div>
+
+
+
     <script>
-        let generatedHash = ''; // Variable to store generated hash
+        let generatedHash = ''; 
 
         function generatePassword() {
             let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
@@ -107,23 +189,23 @@
 
         function copyToClipboard(elementId, isText = false) {
             let text = isText ? document.getElementById(elementId).textContent : document.getElementById(elementId).value;
-            let button = event.target; // This will reference the button that was clicked
+            let button = event.target; 
 
-            // Copy the text to clipboard
+    
             navigator.clipboard.writeText(text).then(() => {
-                // Save the original button text and color
+                
                 let originalText = button.innerText;
                 let originalColor = button.style.backgroundColor;
 
-                // Change the button text to "Copied" and change the button color
+                
                 button.innerText = "Copied";
-                button.style.backgroundColor = "#28a745"; // Green color for copied
+                button.style.backgroundColor = "#28a745"; 
 
-                // Revert the button text and color back to original after 2 seconds
+                
                 setTimeout(() => {
                     button.innerText = originalText;
                     button.style.backgroundColor = originalColor;
-                }, 2000);
+                }, 1000);
             }).catch(err => {
                 console.error("Error copying text: ", err);
             });
@@ -155,6 +237,7 @@
         async function checkLeak() {
             let password = document.getElementById("leakPassword").value;
             let leakResult = document.getElementById("leakResult");
+            let breachCount = document.getElementById("breachCount");
 
             if (!password) {
                 leakResult.textContent = "Please enter a password.";
@@ -169,14 +252,24 @@
             try {
                 let response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
                 let data = await response.text();
+                let found = data.split("\n").find(line => line.startsWith(suffix));
 
-                leakResult.textContent = data.includes(suffix) ? "Password has been leaked!" : "Password is safe.";
-                leakResult.style.color = data.includes(suffix) ? "red" : "green";
+                if (found) {
+                    let breachTimes = found.split(":")[1];
+                    leakResult.textContent = "Password has been leaked!";
+                    breachCount.textContent = `Times found in breaches: ${breachTimes}`;
+                    leakResult.style.color = "red";
+                } else {
+                    leakResult.textContent = "Password is safe.";
+                    breachCount.textContent = "";
+                    leakResult.style.color = "green";
+                }
             } catch (error) {
                 leakResult.textContent = "Error checking password leak.";
                 leakResult.style.color = "red";
             }
         }
+
 
         function generateHash() {
             let password = document.getElementById("hashPassword").value;
@@ -194,34 +287,36 @@
         }
 
         function copyHash() {
-            // Check if a hash has been generated and if the password input is empty
             if (!generatedHash || document.getElementById("hashPassword").value === "") {
                 alert("Please generate SHA-256 hash first.");
                 return;
             }
 
-            // Copy the generated hash to clipboard
             navigator.clipboard.writeText(generatedHash).then(() => {
-                let button = document.getElementById('copyHashButton'); // Reference to the button that was clicked
+                let button = document.getElementById('copyHashButton'); 
 
-                // Save the original button text and color
+                
                 let originalText = button.innerText;
                 let originalColor = button.style.backgroundColor;
 
-                // Change the button text to "Copied" and change the button color
+                
                 button.innerText = "Copied";
-                button.style.backgroundColor = "#28a745"; // Green color for copied
+                button.style.backgroundColor = "#28a745"; 
 
-                // Revert the button text and color back to original after 2 seconds
+                
                 setTimeout(() => {
                     button.innerText = originalText;
                     button.style.backgroundColor = originalColor;
-                }, 2000);
+                }, 1000);
             }).catch(err => {
                 console.error("Error copying hash: ", err);
             });
         }
+
     </script>
+
+
+
 </body>
 
 </html>
